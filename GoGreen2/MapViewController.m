@@ -333,7 +333,6 @@
     {
         NSNumber *messageID = selectedMarker.messageID;
         
-        [[ContainerViewController sharedContainer] switchMessageView];
 
         __block MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:TRUE];
         [hud setLabelText:@"Finding Message"];
@@ -342,8 +341,16 @@
                                                 currentMessages:[[ContainerViewController sharedContainer] theMessageViewController].messages
                                                         success:^(Message *message) {
                                                             [hud hide:TRUE];
+                                                            [[ContainerViewController sharedContainer] switchMessageView];
+                                                            [[[ContainerViewController sharedContainer] theMessageViewController] showSelectedMessage:message];
                                                         } andFailure:^(AFHTTPRequestOperation *operation, NSError *error) {
                                                             [hud hide:TRUE];
+                                                            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Connection Error"
+                                                                                                            message:@"Could not connect to server"
+                                                                                                           delegate:nil
+                                                                                                  cancelButtonTitle:@"Ok"
+                                                                                                  otherButtonTitles:nil, nil];
+                                                            [alert show];
                                                         }];
     }
 }
@@ -744,11 +751,21 @@
 #pragma mark - Networking Methods
 -(void)getMapPins
 {
+    __block MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:TRUE];
+    [hud setLabelText:@"Finding Markers"];
+    
     [[OperationController shared] fetchMapPinsForRegion:self.lastViewedLocation
                                             withSuccess:^(NSMutableSet *mapPins) {
-                                                nil;
+                                                [hud setHidden:TRUE];
+                                                [theCoreDataController saveContext];
                                             } andFailure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                                                nil;
+                                                [hud setHidden:TRUE];
+                                                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Connection Error"
+                                                                                                message:@"Could not connect to server"
+                                                                                               delegate:nil
+                                                                                      cancelButtonTitle:@"Ok"
+                                                                                      otherButtonTitles:nil, nil];
+                                                [alert show];
                                             }];
 }
 
@@ -758,73 +775,11 @@
     [hud setLabelText:@"Finding Marker"];
     
     [[OperationController shared] fetchMapPinWithPinID:self.pinIDToShow.integerValue
-                                               success:^(HomeMessage *message) {
+                                               success:^(Marker *message) {
                                                    [hud hide:TRUE];
                                                } andFailure:^(AFHTTPRequestOperation *operation, NSError *error) {
                                                    [hud hide:TRUE];
                                                }];
-    
-    /*
-    NSLog(@"Network - Map: Getting Map Pin for Pin Show");
-    if([[ContainerViewController sharedContainer] networkingReachability])
-    {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0),^{
-            //Background Process Block
-            
-            NSLog(@"--- Data - Map: Pin Id: %@", self.pinIDToShow.stringValue);
-            NSDictionary *response = [[CSocketController sharedCSocketController] performGETRequestToHost:BASE_HOST withRelativeURL:[NSString stringWithFormat:@"%@?id=%@",PINS_RELATIVE_URL, self.pinIDToShow.stringValue] withPort:API_PORT withProperties:nil];
-            
-            dispatch_async(dispatch_get_main_queue(),^{
-                //Completion Block
-                
-                NSString *statusCode = [response objectForKey:@"status_code"];
-                
-                NSLog(@"Network - Map: Recieved Status Code: %@", statusCode);
-                
-                if([statusCode integerValue] == 200)
-                {
-                    [self.downloadedMapPins removeAllObjects];
-        
-                    NSDictionary *networkPin = [response objectForKey:@"pin"];
-                    
-                    NSLog(@"Network - Map: Recieved New Map Pin");
-                    NSLog(@"--- Data - Map: %@", [response objectForKey:@"pin"]);
-                    
-        
-                    //Add New Pins
-                    HeatMapPin *newPin = [[HeatMapPin alloc] init];
-                    NSString *stringPinID = [[networkPin objectForKey:@"id"] stringValue];
-                    NSNumberFormatter *f = [[NSNumberFormatter alloc] init];
-                    [f setNumberStyle:NSNumberFormatterDecimalStyle];
-                    newPin.pinID = [f numberFromString:stringPinID];
-                    newPin.message = [networkPin objectForKey:@"message"];
-                    newPin.coordinate = CLLocationCoordinate2DMake([[networkPin objectForKey:@"latDegrees"] doubleValue], [[networkPin objectForKey:@"lonDegrees"] doubleValue]);
-                    newPin.type = [networkPin objectForKey:@"type"];
-                    newPin.message = [networkPin objectForKey:@"message"];
-                    newPin.addressed = [[networkPin objectForKey:@"addressed"] boolValue];
-                    
-                    [self.downloadedMapPins addObject:newPin];
-                
-                    
-                    [[NSNotificationCenter defaultCenter] postNotificationName:@"finishedGettingPinsForShowPin" object:[NSNumber numberWithInt:statusCode.integerValue]];
-                }
-                else
-                {
-                    self.finishedDownloadingMapPins = TRUE;
-                    [[NSNotificationCenter defaultCenter] postNotificationName:@"finishedGettingPinsForShowPin" object:[NSNumber numberWithInt:statusCode.integerValue]];
-                }
-            });
-        });
-    }
-    else
-    {
-        self.finishedDownloadingMapPins = TRUE;
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"finishedDownloadingMapPins" object:[NSNumber numberWithInt:-1]];
-        
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Cannot Get Pins" message:@"You dont appear to have a network connection, please connect and retry loading the map." delegate:nil cancelButtonTitle:@"Cancel" otherButtonTitles:nil, nil];
-        [alert show];
-    }
-    */
 }
 
 -(IBAction)postMarker:(NSNotification *)sender
@@ -925,171 +880,27 @@
 
 -(void)pushHeatMapDataToServer
 {
-    [[NetworkingController shared] pushHeatMapPoints];
-    /*
-    NSLog(@"Message - Map: Pushing Heatmap Data To Server");
-    NSLog(@"--- Data - Map: QUEUE LIMIT = %d", UPLOAD_QUEUE_LENGTH);
-    NSLog(@"--- Data - Map: Gathered Queue = %d", self.gatheredMapPoints.count);
-    NSLog(@"--- Data - Map: Push Overdue = %d", self.pushOverdue);
-    
-    
-    //If the number of gathered points in the queue array is equal to our define or we have the overdue flag set. Update our gathered points with the server!
-    if(self.gatheredMapPointsQueue.count >= UPLOAD_QUEUE_LENGTH || self.pushOverdue)
-    {
-        if(![[ContainerViewController sharedContainer] networkingReachability])
-        {
-            //If We Dont Have Service, Mark As Overdue
-            self.pushOverdue = TRUE;
-        }
-        else
-        {
-            //If We Do Have Service Push That Bitch
-            NSLog(@"Message - Map: Push Queue Limit Reached, Push Data,");
-            int sentCount = 0;
-            NSMutableArray *dataArray = [[NSMutableArray alloc] init];
-            
-            for(int i = 0; i < self.gatheredMapPointsQueue.count; i++)
-            {
-                sentCount++;
-                HeatMapPoint *point = [self.gatheredMapPointsQueue objectAtIndex:i];
-                
-                //Create Parameters For Push
-                NSArray *keys = [NSArray arrayWithObjects:@"latDegrees", @"lonDegrees", @"secondsWorked", nil];
-                NSMutableArray *objects = [[NSMutableArray alloc] init];
-                [objects addFloat:point.lat];
-                [objects addFloat:point.lon];
-                [objects addFloat:point.secWorked];
-                
-                //Create Dictionary Of Parameters
-                NSDictionary *parameters = [[NSDictionary alloc] initWithObjects:objects forKeys:keys];
-                [dataArray addObject:parameters];
-            }
-            
-            NSLog(@"--- Data - Map: %@", dataArray);
-        
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0),^{
-                //Background Process Block
-                NSDictionary *response = [[CSocketController sharedCSocketController] performPUTRequestToHost:BASE_HOST withRelativeURL:HEAT_MAP_RELATIVE_URL withPort:API_PORT withProperties:dataArray];
-            
-                dispatch_async(dispatch_get_main_queue(),^{
-                    //Completion Block
-                    NSString *statusCode = [response objectForKey:@"status_code"];
-                    
-                    NSLog(@"Network - Map: Recieved Status Code: %@", statusCode);
-                    
-                    if([statusCode integerValue] != 200)
-                    {
-                        NSLog(@"Network - Map: ***************************************");
-                        NSLog(@"Network - Map: ***************************************");
-                        NSLog(@"Network - Map: *************** WANRING ***************");
-                        NSLog(@"Network - Map: ****** Received Bad Status Code *******");
-                        NSLog(@"Network - Map: %@", response);
-                        NSLog(@"Network - Map: ***************************************");
-                        NSLog(@"Network - Map: ***************************************");
-                        
-                        self.pushOverdue = TRUE;
-                    }
-                    else
-                    {
-                        self.pushOverdue = FALSE;
-                        [self.gatheredMapPointsQueue removeAllObjects];
-                    }
-                });
-            });
-        }
-    }*/
+    [[OperationController shared] uploadHeatMapDataWithSuccess:^(HomeMessage *message) {
+        NSLog(@"*** SUCCESS *** Pushed heat map data correctly!");
+    } andFailure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        self.pushOverdue = TRUE;
+    }];
 }
 -(void)getHeatDataFromServer
 {
-    [[NetworkingController shared] getHeatDataPointsWithDictionary:self.lastViewedLocation];
-    /*
-    self.finishedDownloadingHeatMap = FALSE;
-    
-    //Generation Properties
-    NSNumber *precision = nil;
-    if(location.span.longitudeDelta > 2.0)
-    {
-        precision = @1;
-    }
-    else if(location.span.longitudeDelta > 0.5 && location.span.longitudeDelta < 2.0)
-    {
-        precision = @2;
-    }
-    else if(location.span.longitudeDelta > 0.2 && location.span.longitudeDelta < 0.5)
-    {
-        precision = @3;
-    }
-    else if(location.span.longitudeDelta > 0.05 && location.span.longitudeDelta < 0.2)
-    {
-        precision = @4;
-    }
-    else if(location.span.longitudeDelta < 0.05)
-    {
-        precision = @5;
-    }
-    
-    NSLog(@"Network - Map: Getting Heat Map Data With Data,");
-    NSLog(@"--- Data - Map: Current Precision = %f", precision.floatValue);
-    NSLog(@"--- Data - Map: Current Lat = %f", location.center.latitude);
-    NSLog(@"--- Data - Map: Current Lon = %f", location.center.longitude);
-    NSLog(@"--- Data - Map: Current Lat Delta = %f", location.span.latitudeDelta);
-    NSLog(@"--- Data - Map: Current Lon Delta = %f", location.span.longitudeDelta);
-    
-    NSArray *keys = [NSArray arrayWithObjects:@"latDegrees", @"lonDegrees", @"latOffset", @"lonOffset", @"precision", nil];
-    NSArray *objects = [NSArray arrayWithObjects:[NSNumber numberWithFloat:location.center.latitude], [NSNumber numberWithFloat:location.center.longitude], [NSNumber numberWithFloat:span.latitudeDelta], [NSNumber numberWithFloat:span.longitudeDelta], precision, nil];
-    
-    NSDictionary *parameters = [[NSDictionary alloc] initWithObjects:objects forKeys:keys];
- 
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0),^{
-        //Background Process Block
-        NSDictionary *results = [[CSocketController sharedCSocketController] performGETRequestToHost:BASE_HOST withRelativeURL:HEAT_MAP_RELATIVE_URL withPort:API_PORT withProperties:parameters];
-        
-        dispatch_async(dispatch_get_main_queue(),^{
-            //Completion Block
-            NSString *statusCode = [results objectForKey:@"status_code"];
-            
-            NSLog(@"Network - Map: Recieved Status Code: %@", statusCode);
-            
-            if([statusCode integerValue] == 200)
-            {
-                [self.downloadedMapPoints removeAllObjects];
-                
-                NSLog(@"Network - Map: Recieved %d New Heat Map Points", [[results objectForKey:@"grid"] count]);
-                NSLog(@"--- Data - Map: %@", [results objectForKey:@"grid"]);
-                
-                for(NSDictionary *pointDictionary in [results objectForKey:@"grid"])
-                {
-                    HeatMapPoint *newPoint = [[HeatMapPoint alloc] init];
-                    double lat = [[pointDictionary objectForKey:@"latDegrees"] doubleValue];
-                    double lon = [[pointDictionary objectForKey:@"lonDegrees"] doubleValue];
-                    double secWorked = [[pointDictionary objectForKey:@"secondsWorked"] doubleValue];
-
-                    newPoint.lat = lat;
-                    newPoint.lon = lon;
-                    newPoint.secWorked = secWorked;
-                    
-                    [self.downloadedMapPoints addObject:newPoint];
-                }
-                
-                
-                self.finishedDownloadingHeatMap = TRUE;
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"finishedDownloadingHeatMap" object:statusCode];
-            }
-            else
-            {
-                NSLog(@"Network - Map: ***************************************");
-                NSLog(@"Network - Map: ***************************************");
-                NSLog(@"Network - Map: *************** WANRING ***************");
-                NSLog(@"Network - Map: ****** Received Bad Status Code *******");
-                NSLog(@"Network - Map: %@", results);
-                NSLog(@"Network - Map: ***************************************");
-                NSLog(@"Network - Map: ***************************************");
-                
-                self.finishedDownloadingHeatMap = TRUE;
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"finishedDownloadingHeatMap" object:statusCode];
-            }
-        });
-    });*/
+    __block MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:TRUE];
+    [[OperationController shared] fetchHeatMapDataForRegion:self.lastViewedLocation
+                                                withSuccess:^(NSMutableSet *heatMapData) {
+                                                    [hud hide:TRUE];
+                                                } andFailure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                                    [hud hide:TRUE];
+                                                    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Connection Error"
+                                                                                                    message:@"Could not connect to server"
+                                                                                                   delegate:nil
+                                                                                          cancelButtonTitle:@"Ok"
+                                                                                          otherButtonTitles:nil, nil];
+                                                    [alert show];
+                                                }];
 }
 
 #pragma mark - Utility Methods

@@ -141,7 +141,8 @@
     return self;
 }
 
--(instancetype)initWithNewMessage:(Message *)message
+-(instancetype)initWithNewMessage:(NSString *)message
+                          andType:(NSString *)type
 {
     NSString *URLString = [NSString stringWithFormat:@"%@%@", THEME_BASE_URL, THEME_COMMENTS_RELATIVE_URL];
     
@@ -149,9 +150,8 @@
     [URLRequest setHTTPMethod: @"POST"];
     [URLRequest setValue: @"application/json" forHTTPHeaderField: @"Content-Type"];
     
-    NSDictionary *parsedMessage = [message createJSONPayload];
-    
-    NSData *data = [self createPayloadFromObject:parsedMessage];
+    NSData *data = [self createPayloadFromObject:@{@"message":message,
+                                                   @"type":type}];
     [URLRequest setHTTPBody:data];
     
     if (self = [super initWithRequest: URLRequest])

@@ -59,10 +59,21 @@ static OperationController *sharedOperationController;
     } failure:failure];
 }
 
--(void)uploadHeatMapDataWithSuccess:(void (^)(HomeMessage *))success
+-(void)uploadHeatMapDataWithSuccess:(void (^)())success
                          andFailure:(void (^)(AFHTTPRequestOperation *, NSError *))failure
 {
+    NSMutableSet *unpushedHeatMapData = [[NSMutableSet alloc] init];
     
+    for(HeatmapPoint *tempHeatMapPoint in [theCoreDataController fetchObjectsWithEntityName:CORE_DATA_HEATMAPPOINT predicate:[NSPredicate predicateWithFormat:@"needsPush == TRUE"] sortDescriptors:nil andBatchNumber:0])
+    {
+        NSDictionary *tempPayload = [tempHeatMapPoint createJSONPayload];
+        [unpushedHeatMapData addObject:tempPayload];
+    }
+    
+    NetworkOperation *operation = [[NetworkOperation alloc] initWithHeatMapUpload:unpushedHeatMapData];
+    [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
+        success();
+    } failure:failure];
 }
 
 #pragma mark - Markers
@@ -85,13 +96,20 @@ static OperationController *sharedOperationController;
 {
     NetworkOperation *operation = [[NetworkOperation alloc] initForMapPinWithPinID:pinID];
     [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
-        nil;
+        NSDictionary *markerData = [responseObject objectForKey:@"pin"];
+        if(markerData == nil)
+        {
+            NSException *exception = [[NSException alloc] initWithName:@"No Marker Found" reason:@"Did not find marker in api request" userInfo:nil];
+            [exception raise];
+        }
+        Marker *marker = [Marker parseToObjectiveC:markerData];
+        success(marker);
     } failure:failure];
 }
 
 #pragma mark - Comments
 
--(void)fetchLatestMessagesWithCurrentMessages:(NSArray *)currentMessages
+-(void)fetchLatestMessagesWithCurrentMessages:(NSMutableArray *)currentMessages
                                       success:(void (^)(NSMutableSet *newMessages))success
                                    andFailure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
 {
@@ -108,14 +126,14 @@ static OperationController *sharedOperationController;
                 [newMessages addObject:newMessage];
             }
         }
-        
+        [currentMessages addObjectsFromArray:newMessages.allObjects];
         success(newMessages);
         
     } failure:failure];
 }
 
 -(void)fetchMessageWithMessageID:(NSInteger)messageID
-                 currentMessages:(NSArray *)currentMessages
+                 currentMessages:(NSMutableArray *)currentMessages
                          success:(void (^)(Message *message))success
                       andFailure:(void (^)(AFHTTPRequestOperation *, NSError *))failure
 {
@@ -127,11 +145,14 @@ static OperationController *sharedOperationController;
     }
     else
     {
+        __block NSMutableSet *newMessages = [[NSMutableSet alloc] init];
         [self recursivelyFindMessageWithPage:1
                                    messageID:messageID
-                                 newMessages:[[NSMutableSet alloc] init]
-                                     success:success
-                                  andFailure:failure];
+                                 newMessages:newMessages
+                                     success:^(Message *message) {
+                                         [currentMessages addObjectsFromArray:newMessages.allObjects];
+                                         success(message);
+                                     } andFailure:failure];
     }
 }
 
@@ -177,7 +198,7 @@ static OperationController *sharedOperationController;
     } failure:failure];
 }
 
--(void)fetchNewestMessages:(NSArray *)currentMessages
+-(void)fetchNewestMessages:(NSMutableArray *)currentMessages
                    success:(void (^)(NSMutableSet *newMessages))success
                 andFailure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure
 {
@@ -187,6 +208,7 @@ static OperationController *sharedOperationController;
                                 currentMessages:currentMessages
                                     newMessages:newMessages
                                         success:^{
+                                            [currentMessages addObjectsFromArray:newMessages.allObjects];
                                             success(newMessages);
                                         } andFailure:failure];
 }
@@ -257,10 +279,22 @@ static OperationController *sharedOperationController;
 }
 
 -(void)updateMessage:(Message *)message
-             success:(void (^)(HomeMessage *))success
+             success:(void (^)())success
           andFailure:(void (^)(AFHTTPRequestOperation *, NSError *))failure
 {
-    
+    NetworkOperation *operation = [[NetworkOperation alloc] initWithUpdatedMessage:message];
+    [operation setCompletionBlockWithSuccess:success
+                                     failure:failure];
+}
+
+-(void)sendNewMessage:(NSString *)message
+                 type:(NSString *)type
+              success:(void (^)())success
+           andFailure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
+{
+    NetworkOperation *operation = [[NetworkOperation alloc] initWithNewMessage:message andType:type];
+    [operation setCompletionBlockWithSuccess:success
+                                     failure:failure];
 }
 
 #pragma mark - Other

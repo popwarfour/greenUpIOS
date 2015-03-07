@@ -44,6 +44,9 @@
     self.messages = [[NSMutableArray alloc] init];
     self.keyboardIsOut = FALSE;
     self.appendingMessages = FALSE;
+    
+    self.lastPage = 1;
+    self.findLastPage = FALSE;
 
     NSLog(@"***************** %f", self.view.frame.size.height - 50);
     [self.messageViewContainer setBackgroundColor:[UIColor grayColor]];
@@ -110,14 +113,6 @@
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(toggleMessageAddressed:) name:@"toggleMessageAddressed" object:nil];
     
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(finishedGettingNewPageForScrolling:) name:@"finishedGettingNewPageForScrolling" object:nil];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(finishedGettingNewPageForShowingNewMessage:) name:@"finishedGettingNewPageForShowingNewMessage" object:nil];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(finishedGettingMessageForFirstPageOfShowMessage:) name:@"finishedGettingMessageForFirstPageOfShowMessage" object:nil];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(finishedUpdatingMessageStatus:) name:@"finishedUpdatingMessageStatus" object:nil];
-    
     [[NSNotificationCenter defaultCenter] addObserver:nil selector:@selector(showSelectedMessage:) name:NOTIFICATOIN_FINISHED_GETTING_MESSAGE_BY_ID object:nil];
 
     
@@ -140,8 +135,25 @@
 {
     if(self.messages.count == 0)//self.pinIDToShow == nil)
     {
-        [self getMessages];
-        [self.theTableView reloadData];
+        self.findLastPage = TRUE;
+        __block MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:TRUE];
+        [hud setLabelText:@"Finding Messages"];
+        
+        [[OperationController shared] fetchLatestMessagesWithCurrentMessages:self.messages
+                                                                     success:^(NSMutableSet *newMessages) {
+                                                                         [hud hide:TRUE];
+                                                                         [theCoreDataController saveContext];
+                                                                         [self.theTableView reloadData];
+                                                                     } andFailure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                                                         [hud hide:TRUE];
+                                                                         
+                                                                         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Connection Error"
+                                                                                                                         message:@"Could not connect to server"
+                                                                                                                        delegate:nil
+                                                                                                               cancelButtonTitle:@"Ok"
+                                                                                                               otherButtonTitles:nil, nil];
+                                                                         [alert show];
+                                                                     }];
     }
 }
 
@@ -152,19 +164,31 @@
 }
 
 #pragma mark - Networking Delegates
--(void)getMessages
-{
-    [[NetworkingController shared] getMessages];
-}
-
 -(void)getMessageByAppendingPageForScrolling
 {
-    [[NetworkingController shared] getMessageForAppendingPageForScrollingWithPageURL:self.nextPageURL];
-}
-
--(void)getMessageByAppendingPageForShowMessage
-{
-    [[NetworkingController shared] getMessageByAppendingPageForShowMessageWithPageURL:self.nextPageURL];
+    __block MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:TRUE];
+    [hud setLabelText:@"Finding Messages"];
+    
+    if(self.findLastPage == TRUE)
+    {
+        
+    }
+    else
+    {
+        self.lastPage++;
+        [[OperationController shared] fetchMessagesForPage:self.lastPage
+                                           currentMessages:self.messages
+                                                   success:^(NSMutableSet *messages) {
+                                                       [theCoreDataController saveContext];
+                                                   } andFailure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                                       UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Connection Error"
+                                                                                                       message:@"Could not connect to server"
+                                                                                                      delegate:nil
+                                                                                             cancelButtonTitle:@"Ok"
+                                                                                             otherButtonTitles:nil, nil];
+                                                       [alert show];
+                                                   }];
+    }
 }
 
 -(IBAction)postMessage:(id)sender
@@ -172,111 +196,52 @@
     self.currentMessageType = MESSAGE_TYPE_4_NETWORK_TYPE;
     
     NSString *msg = [[self.messageTextView.text componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]]componentsJoinedByString:@" "];
-    [[NetworkingController shared] postMessageWithMessageType:self.currentMessageType andMessage:msg];
-}
-
-
-#pragma mark Get Call Backs
-
--(IBAction)finishedGettingMessageForFirstPageOfShowMessage:(NSNotification *)sender
-{
-    NSLog(@"Message - Message: Finished Getting Message For First Page Of Show Message");
-    NSNumber *statusCode = sender.object;
-    if([statusCode integerValue] == 200)
-    {
-        [self showSelectedMessage:nil];
-    }
-}
-
--(IBAction)finishedGettingNewPageForScrolling:(NSNotification *)sender
-{
-    NSLog(@"Message - Message: Finished Getting New Page For Scrolling");
-    NSArray *newMessages = sender.object;
     
-    [self.messages addObjectsFromArray:newMessages];
+    self.findLastPage = TRUE;
     
-    NSMutableArray *newIndexes = [[NSMutableArray alloc] init];
-    for(Message *msg in newMessages)
-    {
-        [newIndexes addObject:[NSIndexPath indexPathForRow:[self.messages indexOfObject:msg] inSection:0]];
-    }
-    [self.theTableView insertRowsAtIndexPaths:newIndexes withRowAnimation:UITableViewRowAnimationAutomatic];
-    
-    self.appendingMessages = FALSE;
-}
--(IBAction)finishedGettingNewPageForShowingNewMessage:(NSNotification *)sender
-{
-    NSLog(@"Message - Message: Finished Getting New Page For Showing New Message");
-    NSArray *newMessages = sender.object;
-    
-    Message *selectedMessage = nil;
-#warning !!!!!!!!!!!!!!!!!!!!!
-    /*
-    for(Message *msg in newMessages)
-    {
-        if(msg.markerID != nil)
-        {
-            Marker *tempMarker = msg.marker;
-            if([tempMarker.markerID isEqualToNumber:self.pinIDToShow])
-            {
-                selectedMessage = msg;
-            }
-        }
-    }*/
-    
-    //Insert New Messages Into Table
-    [self.messages addObjectsFromArray:newMessages];
-    
-    /*
-    for(NetworkMessage *msg in newMessages)
-    {
-        [newIndexes addObject:[NSIndexPath indexPathForRow:[self.messages indexOfObject:msg] inSection:0]];
-    }
-    [self.theTableView insertRowsAtIndexPaths:newIndexes withRowAnimation:UITableViewRowAnimationNone];
-    */
-    
-    if(selectedMessage == nil)
-    {
-        //recurrently get new messages
-        [self getMessageByAppendingPageForShowMessage];
-    }
-    else
-    {
-        self.appendingMessages = FALSE;
-        
-        //Scroll to new position
-        NSIndexPath *indexOfSelectedMessage = [NSIndexPath indexPathForRow:[self.messages indexOfObject:selectedMessage] inSection:0];
-        
-        [self.theTableView reloadData];
-        [self.theTableView scrollToRowAtIndexPath:indexOfSelectedMessage atScrollPosition:UITableViewScrollPositionMiddle animated:FALSE];
-        //[self.theTableView scrollToRowAtIndexPath:indexOfSelectedMessage atScrollPosition:UITableViewScrollPositionMiddle animated:FALSE];
-        
-        for(int i = 0; i < self.messages.count; i++)
-        {
-            if(i != indexOfSelectedMessage.row)
-            {
-                MessageCell *cell = (MessageCell *)[self.theTableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:i inSection:0]];
-                [cell.contentView setAlpha:0];
-            }
-        }
-        
-        [self performSelector:@selector(removeMessageFadeOverlay:) withObject:indexOfSelectedMessage afterDelay:1];
-    }
-}
-
--(IBAction)finishedUpdatingMessageStatus:(id)sender
-{
-    self.toggledMessageRef = nil;
-    [self.theTableView reloadData];
+    [[OperationController shared] sendNewMessage:msg
+                                            type:self.currentMessageType
+                                         success:^{
+                                             [[OperationController shared] fetchLatestMessagesWithCurrentMessages:self.messages
+                                                                                                          success:^(NSMutableSet *newMessages) {
+                                                                                                              [theCoreDataController saveContext];
+                                                                                                          } andFailure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                                                                                              
+                                                                                                              UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Connection Error"
+                                                                                                                                                              message:@"Could not connect to server"
+                                                                                                                                                             delegate:nil
+                                                                                                                                                    cancelButtonTitle:@"Ok"
+                                                                                                                                                    otherButtonTitles:nil, nil];
+                                                                                                              [alert show];
+                                                                                                          }];
+                                             [self.theTableView reloadData];
+                                         } andFailure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Connection Error"
+                                                                                             message:@"Could not connect to server"
+                                                                                            delegate:nil
+                                                                                   cancelButtonTitle:@"Ok"
+                                                                                   otherButtonTitles:nil, nil];
+                                             [alert show];
+                                         }];
 }
 
 #pragma mark - Refresh Controls
 
 - (void)refresh:(UIRefreshControl *)refreshControl {
-    [self getMessages];
-    
-    
-    
+    self.findLastPage = TRUE;
+    [[OperationController shared] fetchNewestMessages:self.messages
+                                              success:^(NSMutableSet *newMessages) {
+                                                  [theCoreDataController saveContext];
+#warning RELOAD TABLE HERE?
+                                              } andFailure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                                  UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Connection Error"
+                                                                                                  message:@"Could not connect to server"
+                                                                                                 delegate:nil
+                                                                                        cancelButtonTitle:@"Ok"
+                                                                                        otherButtonTitles:nil, nil];
+                                                  [alert show];
+                                              }];
+
     [refreshControl endRefreshing];
 }
 
@@ -490,63 +455,43 @@
 
 #pragma mark - Message Methods
 
+-(void)sortMessages
+{
+    [self.messages sortUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"timeStamp" ascending:YES]]];
+}
+
+-(NSIndexPath *)findIndexOfMessage:(Message *)message
+{
+    NSInteger row = 0;
+    for(Message *tempMessage in self.messages)
+    {
+        if([tempMessage isEqual:message])
+            return [[NSIndexPath alloc] initWithIndex:row];
+        else
+            row++;
+    }
+    
+    NSException *exception = [[NSException alloc] initWithName:@"Could not find message" reason:@"" userInfo:nil];
+    [exception raise];
+    return nil;
+}
+
 -(IBAction)setMessageType:(NSNotification *)notificationRecieved
 {
     NSLog(@"Messag - Message: Setting Message Type = %@", notificationRecieved.object);
     self.currentMessageType = notificationRecieved.object;
 }
 
--(void)showSelectedMessage:(NSNotification *)notification
+-(void)showSelectedMessage:(Message *)message
 {
-    NSNumber *didSucceed = notification.object;
+    NSLog(@"Message - Message: Found Selected Message On Current Page");
+    [self sortMessages];
+    NSIndexPath *path = [self findIndexOfMessage:message];
     
-    if(didSucceed.boolValue)
-    {
-        Message *selectedMessage = nil;
-#warning !!!!!!!!!!!!!! FINISHED HERE
-    }
-    else
-    {
-        
-    }
+    [self.theTableView reloadData];
+    [self.theTableView scrollToRowAtIndexPath:path atScrollPosition:UITableViewScrollPositionMiddle animated:FALSE];
     
-    NSLog(@"Message - Message: Showing selected message");
-    Message *selectedMessage = nil;
-    NSIndexPath *indexOfSelectedMessage = nil;
-    int count = 0;
-    for(Message *message in self.messages)
-    {
-#warning !!!!!!!!!!!!!!!!!!!!!
-        /*
-        if(message.marker != nil)
-        {
-            Marker *tempMarker = message.marker;
-            
-            if([tempMarker.markerID isEqualToNumber:self.pinIDToShow])
-            {
-                selectedMessage = message;
-                indexOfSelectedMessage = [NSIndexPath indexPathForRow:count inSection:0];
-                break;
-            }
-        }*/
-
-        count++;
-    }
-    
-    //Check we might not have the pin look through more pages until we find it!
-    if(indexOfSelectedMessage == nil)
-    {
-        NSLog(@"Message - Message: Could Not Find Selected Message On Current Page");
-        [self getMessageByAppendingPageForShowMessage];
-    }
-    else
-    {
-        NSLog(@"Message - Message: Found Selected Message On Current Page");
-        [self.theTableView reloadData];
-        [self.theTableView scrollToRowAtIndexPath:indexOfSelectedMessage atScrollPosition:UITableViewScrollPositionMiddle animated:FALSE];
-        
-        [self performSelector:@selector(showMessageFadeOverlay:) withObject:indexOfSelectedMessage afterDelay:.3];
-    }
+    [self performSelector:@selector(showMessageFadeOverlay:) withObject:path afterDelay:.3];
 }
 
 -(IBAction)showMessageFadeOverlay:(NSIndexPath *)indexOfSelectedMessage
@@ -753,9 +698,22 @@
         }
     }
     
+    [theCoreDataController saveContext];
+    
     if(changesMade != FALSE)
     {
-        [[NetworkingController shared] markMessageAsAddressed:self.toggledMessageRef];
+        [[OperationController shared] updateMessage:self.toggledMessageRef
+                                            success:^{
+                                                [self.theTableView reloadData];
+                                            } andFailure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                                self.toggledMessageRef.addressed = @(!self.toggledMessageRef.addressed.boolValue);
+                                                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Connection Error"
+                                                                                                message:@"Could not connect to server"
+                                                                                               delegate:nil
+                                                                                      cancelButtonTitle:@"Ok"
+                                                                                      otherButtonTitles:nil, nil];
+                                                [alert show];
+                                            }];
     }
 }
 

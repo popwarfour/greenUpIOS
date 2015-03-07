@@ -24,9 +24,10 @@
 @property BOOL appendingMessages;
 @property BOOL keyboardIsOut;
 
--(MessageViewController *)init;
+@property (nonatomic) BOOL findLastPage;
+@property (nonatomic) NSInteger lastPage;
 
-//NETWORKING
--(void)getMessages;
+-(MessageViewController *)init;
+-(void)showSelectedMessage:(Message *)message;
 
 @end

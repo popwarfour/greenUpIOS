@@ -20,7 +20,8 @@
 
 -(instancetype)initWithHeatMapUpload:(NSMutableSet *)heatMapData;
 -(instancetype)initWithNewMarker:(Marker *)marker;
--(instancetype)initWithNewMessage:(Message *)message;
+-(instancetype)initWithNewMessage:(NSString *)message
+                          andType:(NSString *)type;
 -(instancetype)initWithUpdatedMessage:(Message *)message;
 
 @end

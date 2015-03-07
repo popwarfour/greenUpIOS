@@ -28,7 +28,7 @@
                      withSuccess:(void (^)(NSMutableSet *heatMapData))success
                       andFailure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
 
--(void)uploadHeatMapDataWithSuccess:(void (^)(HomeMessage *message))success
+-(void)uploadHeatMapDataWithSuccess:(void (^)())success
                          andFailure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
 
 #pragma mark - Map Pins
@@ -47,23 +47,28 @@
                                       success:(void (^)(NSMutableSet *newMessages))success
                                    andFailure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
 
--(void)fetchNewestMessages:(NSArray *)currentMessages
+-(void)fetchNewestMessages:(NSMutableArray *)currentMessages
                    success:(void (^)(NSMutableSet *newMessages))success
                 andFailure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
 
 -(void)fetchMessagesForPage:(NSInteger)page
-            currentMessages:(NSArray *)currentMessages
+            currentMessages:(NSMutableArray *)currentMessages
                     success:(void (^)(NSMutableSet *messages))success
                  andFailure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
 
 -(void)fetchMessageWithMessageID:(NSInteger)messageID
-                 currentMessages:(NSArray *)currentMessages
+                 currentMessages:(NSMutableArray *)currentMessages
                          success:(void (^)(Message *message))success
                       andFailure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
 
 -(void)updateMessage:(Message *)message
-             success:(void (^)(HomeMessage *message))success
+             success:(void (^)())success
           andFailure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
+
+-(void)sendNewMessage:(NSString *)message
+                 type:(NSString *)type
+              success:(void (^)())success
+           andFailure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
 
 #pragma mark - Other
 
