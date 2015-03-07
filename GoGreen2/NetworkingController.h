@@ -18,29 +18,29 @@
 @property (nonatomic, strong) NSString *nextPageURL;
 @property int lookingForMessageID;
 
-//Home Messages
--(void)getHomeMessage;
-
-//Map
--(void)getMapPinsWithDictionary:(NSDictionary *)buffer;
--(void)getMapPinsForPinShow;
--(void)postMarkerWithPin:(Marker *)pin andMessage:(NSString *)message andType:(NSString *)type;
--(void)pushHeatMapPoints;
--(void)getHeatDataPointsWithDictionary:(NSDictionary *)buffer;
-
-//Messages
--(void)getMessageForFirstPageOfShowMessage;
--(void)getMessages;
--(void)getMessageForAppendingPageForScrollingWithPageURL:(NSString *)pageURL;
--(void)getMessageByAppendingPageForShowMessageWithPageURL:(NSString *)pageURL;
--(void)postMessageWithMessageType:(NSString *)type andMessage:(NSString *)message;
--(void)markMessageAsAddressed:(Message *)message;
-
-//NEW METOHDS
--(void)getMessageForMessageID:(int)messageID;
--(void)getMessagePage;-(void)failedGettingMessagePage:(NSError *)error;
--(void)finishedGettingMessagePage:(NSDictionary *)response;
-
-+ (NetworkingController *)shared;
+////Home Messages
+//-(void)getHomeMessage;
+//
+////Map
+//-(void)getMapPinsWithDictionary:(NSDictionary *)buffer;
+//-(void)getMapPinsForPinShow;
+//-(void)postMarkerWithPin:(Marker *)pin andMessage:(NSString *)message andType:(NSString *)type;
+//-(void)pushHeatMapPoints;
+//-(void)getHeatDataPointsWithDictionary:(NSDictionary *)buffer;
+//
+////Messages
+//-(void)getMessageForFirstPageOfShowMessage;
+//-(void)getMessages;
+//-(void)getMessageForAppendingPageForScrollingWithPageURL:(NSString *)pageURL;
+//-(void)getMessageByAppendingPageForShowMessageWithPageURL:(NSString *)pageURL;
+//-(void)postMessageWithMessageType:(NSString *)type andMessage:(NSString *)message;
+//-(void)markMessageAsAddressed:(Message *)message;
+//
+////NEW METOHDS
+//-(void)getMessageForMessageID:(int)messageID;
+//-(void)getMessagePage;-(void)failedGettingMessagePage:(NSError *)error;
+//-(void)finishedGettingMessagePage:(NSDictionary *)response;
+//
+//+ (NetworkingController *)shared;
 
 @end

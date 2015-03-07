@@ -11,13 +11,16 @@
 
 #define THEME_UPLOAD_QUEUE_LENGTH 5
 
-#define THEME_BASE_URL @"http://greenup.xenonapps.com"
+#warning UPDATE BASE URL HERE AND ENDPOINT URLS
+#define THEME_BASE_URL @"http://api.greenup.xenonapps.com/"
 #define THEME_API_PORT 80
 
-#define THEME_HEAT_MAP_RELATIVE_URL @"/api/heatmap"
-#define THEME_COMMENTS_RELATIVE_URL @"/api/comments"
-#define THEME_PINS_RELATIVE_URL @"/api/pins"
-#define THEME_MESSAGES_RELATIVE_URL @"/api/comments"
+#define THEME_HEAT_MAP_RELATIVE_URL @"heatmap/"
+#define THEME_COMMENTS_RELATIVE_URL @"comments/"
+#define THEME_PINS_RELATIVE_URL @"pins/"
+#define THEME_MESSAGES_RELATIVE_URL @"comments/"
+#define THEME_HOME_MESSAGES_RELATIVE_URL @"welcome/"
+
 
 //ALERTS
 #define ALERT_COULD_NOT_GET_MESSAGE_BY_ID @"We were unable to find the message you are looking for"

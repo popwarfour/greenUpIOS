@@ -11,4 +11,7 @@
 
 @interface Message (methods)
 
++(Message *)parseToObjectiveC:(NSDictionary *)payload;
+-(NSDictionary *)createJSONPayload;
+
 @end

@@ -20,17 +20,27 @@ PODS:
   - AFNetworking/UIKit (2.5.1):
     - AFNetworking/NSURLConnection
     - AFNetworking/NSURLSession
-  - MBProgressHUD (0.9)
-  - TestFlightSDK (3.0.2)
+  - CocoaLumberjack (2.0.0-rc2):
+    - CocoaLumberjack/Default
+    - CocoaLumberjack/Extensions
+  - CocoaLumberjack/Core (2.0.0-rc2)
+  - CocoaLumberjack/Default (2.0.0-rc2):
+    - CocoaLumberjack/Core
+  - CocoaLumberjack/Extensions (2.0.0-rc2):
+    - CocoaLumberjack/Default
+  - MBProgressHUD (0.9.1)
+  - SVGKit (1.2.0):
+    - CocoaLumberjack
 
 DEPENDENCIES:
   - AFNetworking (~> 2.0)
   - MBProgressHUD (~> 0.8)
-  - TestFlightSDK
+  - SVGKit
 
 SPEC CHECKSUMS:
   AFNetworking: 8bee59492a6ff15d69130efa4d0dc67e0094a52a
-  MBProgressHUD: 2038dbcf3dce73215abed6001657043d53aa79a8
-  TestFlightSDK: 0c24c533748d0d84bfe7a3cb6036fa79124d84ee
+  CocoaLumberjack: 6027cd9a0665203a7df456c526e137f02cd547e1
+  MBProgressHUD: f3747dcbd45a9e855a6b0674550651e0b7ed250c
+  SVGKit: f971efd60d42083f56f5040a745faafc0c3ca626
 
 COCOAPODS: 0.34.4

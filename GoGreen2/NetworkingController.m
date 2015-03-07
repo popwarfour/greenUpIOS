@@ -240,7 +240,6 @@ static NetworkingController *sharedNetworkingController;
         
         if(getHomeMessageStatusCode == 200)
         {
-            
             [[NSNotificationCenter defaultCenter] postNotificationName:@"finishedGettingHomeMessage" object:response];
         }
         else

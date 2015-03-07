@@ -14,6 +14,8 @@
 #import "HeatMap.h"
 #import "HeatMapView.h"
 #import "BDHost.h"
+#import "MapRegion.h"
+#import "OperationController.h"
 
 
 @class MapPinSelectorView, Marker;
@@ -47,7 +49,7 @@
 @property BOOL sateliteView;
 @property BOOL drivingAlertShown;
 
-@property (strong, nonatomic) NSDictionary *lastViewedLocation;
+@property (strong, nonatomic) MapRegion *lastViewedLocation;
 
 
 -(MapViewController *)init;

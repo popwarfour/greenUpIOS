@@ -10,4 +10,7 @@
 
 @interface HeatmapPoint (methods)
 
++(HeatmapPoint *)parseToObjectiveC:(NSDictionary *)payload;
+-(NSDictionary *)createJSONPayload;
+
 @end

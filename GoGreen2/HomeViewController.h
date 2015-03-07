@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "HomeMessage.h"
 
 @interface HomeViewController : UIViewController <UIGestureRecognizerDelegate>
 

@@ -21,7 +21,6 @@
 @property (strong, nonatomic) Message *toggledMessageRef;
 @property (strong, nonatomic) NSNumber *pinIDToShow;
 @property (nonatomic, strong) UIView *moreMessagesAlertView;
-
 @property BOOL appendingMessages;
 @property BOOL keyboardIsOut;
 

@@ -9,7 +9,7 @@
 #import "HomeViewController.h"
 #import "ContainerViewController.h"
 #import "MenuView.h"
-#import "NetworkingController.h"
+#import "OperationController.h"
 #import "ThemeHeader.h"
 
 @interface HomeViewController ()
@@ -62,7 +62,11 @@
         
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(finishedGettingHomeMessage:) name:@"finishedGettingHomeMessage" object:nil];
         
-        [[NetworkingController shared] getHomeMessage];
+        [[OperationController shared] fetchHomeMessagesWithSuccess:^(HomeMessage *message) {
+            [self finishedGettingHomeMessage:message];
+        } andFailure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            NSLog(@"*** FAILED *** Failed to receive home message or home message is invalid");
+        }];
         
         self.previousLoggingTimes = [[NSMutableArray alloc] init];
     }
@@ -70,25 +74,14 @@
     return self;
 }
 
--(void)finishedGettingHomeMessage:(NSNotification *)message
+-(void)finishedGettingHomeMessage:(HomeMessage *)message
 {
-    if([message.object isKindOfClass:[NSString class]])
-    {
-        //FAILED
-        NSLog(@"FAILED");
-    }
-    else
-    {
-        NSDictionary *messages = message.object;
-        NSLog(@"%@", messages);
-        
-        NSMutableString *updatdHomeMessage = [[NSMutableString alloc] init];
-        [updatdHomeMessage appendFormat:@"%@", [messages objectForKey:@"message"]];
-        [updatdHomeMessage appendFormat:@"\n"];
-        [updatdHomeMessage appendFormat:@"Green Up Day Starts on %@", [messages objectForKey:@"date"]];
-        
-        [self.mainLabel setText:updatdHomeMessage];
-    }
+    NSMutableString *updatdHomeMessage = [[NSMutableString alloc] init];
+    [updatdHomeMessage appendFormat:@"%@", message.message];
+    [updatdHomeMessage appendFormat:@"\n"];
+    [updatdHomeMessage appendFormat:@"Green Up Day Starts on %@", message.date];
+    
+    [self.mainLabel setText:updatdHomeMessage];
 }
 
 -(IBAction)toggleCleanUp:(id)sender

@@ -110,8 +110,6 @@
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(toggleMessageAddressed:) name:@"toggleMessageAddressed" object:nil];
     
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(getMessageForFirstPageOfShowMessage) name:@"getMessagesForShowingSelectedMessage" object:nil];
-    
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(finishedGettingNewPageForScrolling:) name:@"finishedGettingNewPageForScrolling" object:nil];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(finishedGettingNewPageForShowingNewMessage:) name:@"finishedGettingNewPageForShowingNewMessage" object:nil];
@@ -154,11 +152,6 @@
 }
 
 #pragma mark - Networking Delegates
--(void)getMessageForFirstPageOfShowMessage
-{
-    [[NetworkingController shared] getMessageForFirstPageOfShowMessage];
-}
-
 -(void)getMessages
 {
     [[NetworkingController shared] getMessages];
@@ -281,6 +274,9 @@
 
 - (void)refresh:(UIRefreshControl *)refreshControl {
     [self getMessages];
+    
+    
+    
     [refreshControl endRefreshing];
 }
 

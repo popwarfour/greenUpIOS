@@ -48,15 +48,39 @@
 #define COCOAPODS_VERSION_MINOR_AFNetworking_UIKit 5
 #define COCOAPODS_VERSION_PATCH_AFNetworking_UIKit 1
 
+// CocoaLumberjack
+#define COCOAPODS_POD_AVAILABLE_CocoaLumberjack
+#define COCOAPODS_VERSION_MAJOR_CocoaLumberjack 2
+#define COCOAPODS_VERSION_MINOR_CocoaLumberjack 0
+#define COCOAPODS_VERSION_PATCH_CocoaLumberjack 0
+
+// CocoaLumberjack/Core
+#define COCOAPODS_POD_AVAILABLE_CocoaLumberjack_Core
+#define COCOAPODS_VERSION_MAJOR_CocoaLumberjack_Core 2
+#define COCOAPODS_VERSION_MINOR_CocoaLumberjack_Core 0
+#define COCOAPODS_VERSION_PATCH_CocoaLumberjack_Core 0
+
+// CocoaLumberjack/Default
+#define COCOAPODS_POD_AVAILABLE_CocoaLumberjack_Default
+#define COCOAPODS_VERSION_MAJOR_CocoaLumberjack_Default 2
+#define COCOAPODS_VERSION_MINOR_CocoaLumberjack_Default 0
+#define COCOAPODS_VERSION_PATCH_CocoaLumberjack_Default 0
+
+// CocoaLumberjack/Extensions
+#define COCOAPODS_POD_AVAILABLE_CocoaLumberjack_Extensions
+#define COCOAPODS_VERSION_MAJOR_CocoaLumberjack_Extensions 2
+#define COCOAPODS_VERSION_MINOR_CocoaLumberjack_Extensions 0
+#define COCOAPODS_VERSION_PATCH_CocoaLumberjack_Extensions 0
+
 // MBProgressHUD
 #define COCOAPODS_POD_AVAILABLE_MBProgressHUD
 #define COCOAPODS_VERSION_MAJOR_MBProgressHUD 0
 #define COCOAPODS_VERSION_MINOR_MBProgressHUD 9
-#define COCOAPODS_VERSION_PATCH_MBProgressHUD 0
+#define COCOAPODS_VERSION_PATCH_MBProgressHUD 1
 
-// TestFlightSDK
-#define COCOAPODS_POD_AVAILABLE_TestFlightSDK
-#define COCOAPODS_VERSION_MAJOR_TestFlightSDK 3
-#define COCOAPODS_VERSION_MINOR_TestFlightSDK 0
-#define COCOAPODS_VERSION_PATCH_TestFlightSDK 2
+// SVGKit
+#define COCOAPODS_POD_AVAILABLE_SVGKit
+#define COCOAPODS_VERSION_MAJOR_SVGKit 1
+#define COCOAPODS_VERSION_MINOR_SVGKit 2
+#define COCOAPODS_VERSION_PATCH_SVGKit 0
 

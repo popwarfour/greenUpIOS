@@ -14,8 +14,6 @@
 #import "NetworkingController.h"
 #import "TutorialViewController.h"
 
-#import "TestFlight.h"
-
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
@@ -49,7 +47,6 @@
     
         self.window.rootViewController = nav;
         
-        [TestFlight takeOff:@"60fa253d-8284-496a-97c3-34b3f1cb179c"];
     //}
     [self.window makeKeyAndVisible];
     return YES;

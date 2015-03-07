@@ -10,13 +10,17 @@
 #ifndef GreenUpVt_CoreDataHeaders_h
 #define GreenUpVt_CoreDataHeaders_h
 
+#import "Message.h"
+#import "Marker.h"
+#import "HeatmapPoint.h"
 #import "Message+methods.h"
 #import "Marker+methods.h"
 #import "HeatmapPoint+methods.h"
 #import "coreDataController.h"
 
-#define CORE_DATA_MESSAGE @"Message"
-#define CORE_DATA_MARKER @"Marker"
-#define CORE_DATA_HEATMAPPOINT @"HeatmapPoint"
+static NSString * const CORE_DATA_MESSAGE = @"Message";
+static NSString * const CORE_DATA_MARKER = @"Marker";
+static NSString * const CORE_DATA_HEATMAPPOINT = @"HeatmapPoint";
+
 
 #endif

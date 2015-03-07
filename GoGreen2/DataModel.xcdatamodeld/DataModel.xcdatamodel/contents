@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="5064" systemVersion="13C64" minimumToolsVersion="Xcode 4.3" macOSVersion="Automatic" iOSVersion="Automatic">
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="6254" systemVersion="14B25" minimumToolsVersion="Xcode 4.3" macOSVersion="Automatic" iOSVersion="Automatic">
     <entity name="HeatmapPoint" representedClassName="HeatmapPoint" syncable="YES">
         <attribute name="latDegrees" optional="YES" attributeType="Double" defaultValueString="0" syncable="YES"/>
         <attribute name="lonDegrees" optional="YES" attributeType="Double" defaultValueString="0" syncable="YES"/>
@@ -24,8 +24,8 @@
         <attribute name="timeStamp" optional="YES" attributeType="Date" syncable="YES"/>
     </entity>
     <elements>
-        <element name="HeatmapPoint" positionX="-45" positionY="54" width="128" height="105"/>
-        <element name="Marker" positionX="-54" positionY="-9" width="128" height="133"/>
-        <element name="Message" positionX="-63" positionY="-18" width="128" height="148"/>
+        <element name="HeatmapPoint" positionX="-144" positionY="108" width="128" height="105"/>
+        <element name="Marker" positionX="-38" positionY="-108" width="128" height="133"/>
+        <element name="Message" positionX="-263" positionY="-108" width="128" height="148"/>
     </elements>
 </model>

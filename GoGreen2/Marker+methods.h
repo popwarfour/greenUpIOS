@@ -10,4 +10,7 @@
 
 @interface Marker (methods)
 
++(Marker *)parseToObjectiveC:(NSDictionary *)payload;
+-(NSDictionary *)createJSONPayload;
+
 @end
