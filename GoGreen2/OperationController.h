@@ -22,6 +22,8 @@
 
 + (OperationController *) shared;
 
+-(instancetype)init;
+
 #pragma mark - Heat Map Data
 
 -(void)fetchHeatMapDataForRegion:(MapRegion *)mapRegion

@@ -47,7 +47,7 @@
     {
         //Text Content Label
         self.textContentLabel = [[UILabel alloc] init];
-
+        
         [self.textContentLabel setText:contentText];
         [self.textContentLabel setNumberOfLines:10];
         [self.textContentLabel setBackgroundColor:[UIColor clearColor]];
@@ -178,7 +178,7 @@
         [self.textContentLabel setFrame:CGRectMake(45, 6 + extraTop, 260, contentSize.height)];
         
         //Top Slice
-        if(messageObject.addressed)
+        if(messageObject.addressed.boolValue)
         {
             self.topBackgroundImage = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"bubble_gray_top.png"]];
         }
@@ -190,7 +190,7 @@
         
         //Variable Middle Slice
         self.middleBackgroundImage = [[UIView alloc] initWithFrame:CGRectMake(10, 6 + extraTop, 300, contentSize.height + 20)];
-        if(messageObject.addressed)
+        if(messageObject.addressed.boolValue)
         {
             [self.middleBackgroundImage setBackgroundColor:[UIColor colorWithPatternImage:[UIImage imageNamed:@"bubble_gray_center.png"]]];
         }
@@ -202,7 +202,7 @@
         //Buttom Slice
         if(backwards)
         {
-            if(messageObject.addressed)
+            if(messageObject.addressed.boolValue)
             {
                 self.bottomBackgroundImage = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"bubble_gray_bottom_reverse.png"]];
             }
@@ -213,7 +213,7 @@
         }
         else
         {
-            if(messageObject.addressed)
+            if(messageObject.addressed.boolValue)
             {
                 self.bottomBackgroundImage = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"bubble_gray_bottom.png"]];
             }
@@ -356,7 +356,7 @@
 
 -(IBAction)toggleAddressed:(UILongPressGestureRecognizer *)sender
 {
-    if(sender.state == UIGestureRecognizerStateBegan && [self.messageObject.messageType isEqualToString:MESSAGE_TYPE_1_NETWORK_NAME])
+    if(sender.state == UIGestureRecognizerStateBegan && ([self.messageObject.messageType isEqualToString:MESSAGE_TYPE_USER_MARKER] || [self.messageObject.messageType isEqualToString:MESSAGE_TYPE_HAZARD]))
     {
         [[NSNotificationCenter defaultCenter] postNotificationName:@"toggleMessageAddressed" object:self.messageObject];
     }

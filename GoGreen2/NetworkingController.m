@@ -1130,19 +1130,19 @@ static NetworkingController *sharedNetworkingController;
      
     //Generation Properties
     NSNumber *precision = nil;
-    if(((NSNumber *)[buffer objectForKey:@"deltaLon"]).floatValue > 2.0)
+    if(((NSNumber *)[buffer objectForKey:@"deltaLon"]).floatValue >= 2.0)
     {
         precision = @1;
     }
-    else if(((NSNumber *)[buffer objectForKey:@"deltaLon"]).floatValue > 0.5 && ((NSNumber *)[buffer objectForKey:@"deltaLon"]).floatValue < 2.0)
+    else if(((NSNumber *)[buffer objectForKey:@"deltaLon"]).floatValue >= 0.5 && ((NSNumber *)[buffer objectForKey:@"deltaLon"]).floatValue < 2.0)
     {
         precision = @2;
     }
-    else if(((NSNumber *)[buffer objectForKey:@"deltaLon"]).floatValue > 0.2 && ((NSNumber *)[buffer objectForKey:@"deltaLon"]).floatValue < 0.5)
+    else if(((NSNumber *)[buffer objectForKey:@"deltaLon"]).floatValue >= 0.2 && ((NSNumber *)[buffer objectForKey:@"deltaLon"]).floatValue < 0.5)
     {
         precision = @3;
     }
-    else if(((NSNumber *)[buffer objectForKey:@"deltaLon"]).floatValue > 0.05 && ((NSNumber *)[buffer objectForKey:@"deltaLon"]).floatValue < 0.2)
+    else if(((NSNumber *)[buffer objectForKey:@"deltaLon"]).floatValue >= 0.05 && ((NSNumber *)[buffer objectForKey:@"deltaLon"]).floatValue < 0.2)
     {
         precision = @4;
     }
@@ -1365,7 +1365,7 @@ static NetworkingController *sharedNetworkingController;
                                                        timeoutInterval:10];
     
     NSString *value = nil;
-    if(message.addressed)
+    if(message.addressed.boolValue)
     {
         value = @"true";
     }

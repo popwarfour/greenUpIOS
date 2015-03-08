@@ -23,5 +23,6 @@
 -(instancetype)initWithNewMessage:(NSString *)message
                           andType:(NSString *)type;
 -(instancetype)initWithUpdatedMessage:(Message *)message;
+-(instancetype)initWithUpdatedMarkerAddressedStatus:(Message *)message;
 
 @end

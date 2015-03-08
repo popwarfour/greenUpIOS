@@ -143,6 +143,7 @@
                                                                      success:^(NSMutableSet *newMessages) {
                                                                          [hud hide:TRUE];
                                                                          [theCoreDataController saveContext];
+                                                                         [self sortMessages];
                                                                          [self.theTableView reloadData];
                                                                      } andFailure:^(AFHTTPRequestOperation *operation, NSError *error) {
                                                                          [hud hide:TRUE];
@@ -193,7 +194,7 @@
 
 -(IBAction)postMessage:(id)sender
 {
-    self.currentMessageType = MESSAGE_TYPE_4_NETWORK_TYPE;
+    self.currentMessageType = MESSAGE_TYPE_MESSAGE;
     
     NSString *msg = [[self.messageTextView.text componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]]componentsJoinedByString:@" "];
     
@@ -261,7 +262,7 @@
     UITableViewCell *cell = [self.theTableView dequeueReusableCellWithIdentifier:CellIdentifier];
     
     Message *msg = [self.messages objectAtIndex:indexPath.row];
-    
+ 
     if (cell != nil)
     {
         for(UIView *subview in cell.contentView.subviews)
@@ -318,8 +319,6 @@
         }
     }
     
-
-    
     return cell;
 }
 /*
@@ -350,7 +349,7 @@
     Message *msg = [self.messages objectAtIndex:indexPath.row];
     
     CGSize size;
-    if([msg.messageType isEqualToString:MESSAGE_TYPE_3_NETWORK_NAME] || [msg.messageType isEqualToString:MESSAGE_TYPE_3_NETWORK_NAME] || [msg.messageType isEqualToString:MESSAGE_TYPE_2_NETWORK_NAME])
+    if([msg.messageType isEqualToString:Message_Type_ADMIN] || [msg.messageType isEqualToString:Message_Type_MARKER])
     {
         size = [[msg message] sizeWithFont:[UIFont messageFont] constrainedToSize:CGSizeMake(260, CGFLOAT_MAX)];
         size.height += + 20 + 6;
@@ -582,7 +581,7 @@
     self.toggledMessageRef = msg;
     
     NSLog(@"--- Data - Message: %@", self.toggledMessageRef);
-    if(msg.addressed)
+    if(msg.addressed.boolValue)
     {
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:MESSAGE_VIEW_ALERT_CONFIRMATION_TITLE message:MESSAGE_VIEW_ALERT_CONFIRMATION_MESSAGE_UNADDRESSED delegate:self cancelButtonTitle:MESSAGE_VIEW_ALERT_CONFIRMATION_NO otherButtonTitles:MESSAGE_VIEW_ALERT_CONFIRMATION_YES, nil];
         alert.tag = ALERT_VIEW_TOGGLE_OFF;
@@ -713,6 +712,8 @@
                                                                                       cancelButtonTitle:@"Ok"
                                                                                       otherButtonTitles:nil, nil];
                                                 [alert show];
+                                                
+                                                [theCoreDataController saveContext];
                                             }];
     }
 }

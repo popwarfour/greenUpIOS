@@ -15,4 +15,8 @@
 #define MESSAGE_TYPE_HAZARD @"HAZARD"
 #define MESSAGE_TYPE_USER_MARKER @"MARKER"
 
+#define Message_Type_ADMIN @"ADMIN"
+#define Message_Type_MARKER @"MARKER"
+#define Message_Type_COMMENT @"COMMENT"
+
 #endif

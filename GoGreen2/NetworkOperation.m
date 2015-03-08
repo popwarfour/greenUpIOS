@@ -3,7 +3,7 @@
 //  GreenUpIOS
 //
 //  Created by Jordan Rouille on 3/2/15.
-//  Copyright (c) 2015 anders. All rights reserved.
+//  Copyright (c) 2005 anders. All rights reserved.
 //
 
 #import "NetworkOperation.h"
@@ -23,7 +23,8 @@
     
     if (self = [super initWithRequest: URLRequest])
     {
-        [self.responseSerializer setAcceptableStatusCodes: [NSIndexSet indexSetWithIndex: 201]];
+        [self.responseSerializer setAcceptableStatusCodes: [NSIndexSet indexSetWithIndex: 200]];
+        [self setResponseSerializer:[AFJSONResponseSerializer serializer]];
     }
     
     return self;
@@ -39,7 +40,8 @@
     
     if (self = [super initWithRequest: URLRequest])
     {
-        [self.responseSerializer setAcceptableStatusCodes: [NSIndexSet indexSetWithIndex: 201]];
+        [self.responseSerializer setAcceptableStatusCodes: [NSIndexSet indexSetWithIndex: 200]];
+        [self setResponseSerializer:[AFJSONResponseSerializer serializer]];
     }
     
     return self;
@@ -47,7 +49,7 @@
 
 -(instancetype)initForMapPinWithPinID:(NSInteger)pinID
 {
-    NSString *URLString = [NSString stringWithFormat:@"%@:%d%@?id=%ld", THEME_BASE_URL, THEME_API_PORT, THEME_PINS_RELATIVE_URL, (long)pinID];
+    NSString *URLString = [NSString stringWithFormat:@"%@%@?id=%ld", THEME_BASE_URL, THEME_PINS_RELATIVE_URL, (long)pinID];
     
     NSMutableURLRequest *URLRequest = [[NSMutableURLRequest alloc] initWithURL: [NSURL URLWithString:URLString]];
     [URLRequest setHTTPMethod: @"GET"];
@@ -55,7 +57,8 @@
     
     if (self = [super initWithRequest: URLRequest])
     {
-        [self.responseSerializer setAcceptableStatusCodes: [NSIndexSet indexSetWithIndex: 201]];
+        [self.responseSerializer setAcceptableStatusCodes: [NSIndexSet indexSetWithIndex: 200]];
+        [self setResponseSerializer:[AFJSONResponseSerializer serializer]];
     }
     
     return self;
@@ -71,7 +74,8 @@
     
     if (self = [super initWithRequest: URLRequest])
     {
-        [self.responseSerializer setAcceptableStatusCodes: [NSIndexSet indexSetWithIndex: 201]];
+        [self.responseSerializer setAcceptableStatusCodes: [NSIndexSet indexSetWithIndex: 200]];
+        [self setResponseSerializer:[AFJSONResponseSerializer serializer]];
     }
     
     return self;
@@ -87,7 +91,8 @@
     
     if (self = [super initWithRequest: URLRequest])
     {
-        [self.responseSerializer setAcceptableStatusCodes: [NSIndexSet indexSetWithIndex: 201]];
+        [self.responseSerializer setAcceptableStatusCodes: [NSIndexSet indexSetWithIndex: 200]];
+        [self setResponseSerializer:[AFJSONResponseSerializer serializer]];
     }
     
     return self;
@@ -114,7 +119,8 @@
     
     if (self = [super initWithRequest: URLRequest])
     {
-        [self.responseSerializer setAcceptableStatusCodes: [NSIndexSet indexSetWithIndex: 201]];
+        [self.responseSerializer setAcceptableStatusCodes: [NSIndexSet indexSetWithIndex: 200]];
+        [self setResponseSerializer:[AFJSONResponseSerializer serializer]];
     }
     
     return self;
@@ -135,7 +141,8 @@
     
     if (self = [super initWithRequest: URLRequest])
     {
-        [self.responseSerializer setAcceptableStatusCodes: [NSIndexSet indexSetWithIndex: 201]];
+        [self.responseSerializer setAcceptableStatusCodes: [NSIndexSet indexSetWithIndex: 200]];
+        [self setResponseSerializer:[AFJSONResponseSerializer serializer]];
     }
     
     return self;
@@ -156,7 +163,8 @@
     
     if (self = [super initWithRequest: URLRequest])
     {
-        [self.responseSerializer setAcceptableStatusCodes: [NSIndexSet indexSetWithIndex: 201]];
+        [self.responseSerializer setAcceptableStatusCodes: [NSIndexSet indexSetWithIndex: 200]];
+        [self setResponseSerializer:[AFJSONResponseSerializer serializer]];
     }
     
     return self;
@@ -177,7 +185,39 @@
     
     if (self = [super initWithRequest: URLRequest])
     {
-        [self.responseSerializer setAcceptableStatusCodes: [NSIndexSet indexSetWithIndex: 201]];
+        [self.responseSerializer setAcceptableStatusCodes: [NSIndexSet indexSetWithIndex: 200]];
+        [self setResponseSerializer:[AFJSONResponseSerializer serializer]];
+    }
+    
+    return self;
+}
+
+-(instancetype)initWithUpdatedMarkerAddressedStatus:(Message *)message
+{
+    NSString *URLString = [NSString stringWithFormat:@"%@%@?id=%@",THEME_BASE_URL, THEME_PINS_RELATIVE_URL, message.markerID.stringValue];
+    
+    NSMutableURLRequest *URLRequest = [[NSMutableURLRequest alloc] initWithURL: [NSURL URLWithString:URLString]];
+    [URLRequest setHTTPMethod: @"PUT"];
+    [URLRequest setValue: @"application/json" forHTTPHeaderField: @"Content-Type"];
+    
+    NSString *value = nil;
+    if(message.addressed.boolValue)
+    {
+        value = @"true";
+    }
+    else
+    {
+        value = @"false";
+    }
+    NSDictionary *parsedMessage = @{@"addressed":value};
+    
+    NSData *data = [self createPayloadFromObject:parsedMessage];
+    [URLRequest setHTTPBody:data];
+    
+    if (self = [super initWithRequest: URLRequest])
+    {
+        [self.responseSerializer setAcceptableStatusCodes: [NSIndexSet indexSetWithIndex: 200]];
+        [self setResponseSerializer:[AFJSONResponseSerializer serializer]];
     }
     
     return self;
@@ -198,7 +238,7 @@
     NSError *error = nil;
     NSData *data = [NSJSONSerialization dataWithJSONObject:object options:NSJSONWritingPrettyPrinted error:&error];
     
-    if(error == nil)
+    if(error != nil)
     {
         NSException *exception = [[NSException alloc] initWithName:@"Failed To Package Data"
                                                             reason:@"view user info for details"

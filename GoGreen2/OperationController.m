@@ -22,6 +22,16 @@ static OperationController *sharedOperationController;
     return sharedOperationController;
 }
 
+-(instancetype)init
+{
+    if(self = [super init])
+    {
+        self.operationQueue = [[NSOperationQueue alloc] init];
+    }
+    
+    return self;
+}
+
 #pragma mark - Heat Map Data
 
 -(void)fetchHeatMapDataForRegion:(MapRegion *)mapRegion
@@ -57,6 +67,8 @@ static OperationController *sharedOperationController;
         
         success(heatMapData);
     } failure:failure];
+    
+    [self.operationQueue addOperation:operation];
 }
 
 -(void)uploadHeatMapDataWithSuccess:(void (^)())success
@@ -74,6 +86,8 @@ static OperationController *sharedOperationController;
     [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
         success();
     } failure:failure];
+    
+    [self.operationQueue addOperation:operation];
 }
 
 #pragma mark - Markers
@@ -88,6 +102,8 @@ static OperationController *sharedOperationController;
 #warning PROCESS MapPinData
         success(mapPinData);
     } failure:failure];
+    
+    [self.operationQueue addOperation:operation];
 }
 
 -(void)fetchMapPinWithPinID:(NSInteger)pinID
@@ -105,6 +121,8 @@ static OperationController *sharedOperationController;
         Marker *marker = [Marker parseToObjectiveC:markerData];
         success(marker);
     } failure:failure];
+    
+    [self.operationQueue addOperation:operation];
 }
 
 #pragma mark - Comments
@@ -113,13 +131,13 @@ static OperationController *sharedOperationController;
                                       success:(void (^)(NSMutableSet *newMessages))success
                                    andFailure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
 {
-    NetworkOperation *operation = [[NetworkOperation alloc] initForMessagesWithPage:0];
+    NetworkOperation *operation = [[NetworkOperation alloc] initForMessagesWithPage:1];
     [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSArray *comments = [responseObject objectForKey:@"comments"];
         NSMutableSet *newMessages = [[NSMutableSet alloc] init];
         for(NSDictionary *tempMessage in comments)
         {
-            if(![self containsMessageWithMessageID:[tempMessage objectForKey:@"messageID"]
+            if(![self containsMessageWithMessageID:[tempMessage objectForKey:@"id"]
                                 andCurrentMessages:currentMessages])
             {
                 Message *newMessage = [Message parseToObjectiveC:tempMessage];
@@ -130,6 +148,8 @@ static OperationController *sharedOperationController;
         success(newMessages);
         
     } failure:failure];
+    
+    [self.operationQueue addOperation:operation];
 }
 
 -(void)fetchMessageWithMessageID:(NSInteger)messageID
@@ -170,7 +190,7 @@ static OperationController *sharedOperationController;
         Message *foundMessage = nil;
         for(NSDictionary *tempMessage in comments)
         {
-            if(![self containsMessageWithMessageID:[tempMessage objectForKey:@"messageID"]
+            if(![self containsMessageWithMessageID:[tempMessage objectForKey:@"id"]
                                 andCurrentMessages:newMessages.allObjects])
             {
                 Message *newMessage = [Message parseToObjectiveC:tempMessage];
@@ -196,6 +216,8 @@ static OperationController *sharedOperationController;
                                       andFailure:failure];
         }
     } failure:failure];
+    
+    [self.operationQueue addOperation:operation];
 }
 
 -(void)fetchNewestMessages:(NSMutableArray *)currentMessages
@@ -226,7 +248,7 @@ static OperationController *sharedOperationController;
         BOOL foundOldMessage = FALSE;
         for(NSDictionary *tempMessage in comments)
         {
-            if(![self containsMessageWithMessageID:[tempMessage objectForKey:@"messageID"]
+            if(![self containsMessageWithMessageID:[tempMessage objectForKey:@"id"]
                                 andCurrentMessages:currentMessages])
             {
                 Message *newMessage = [Message parseToObjectiveC:tempMessage];
@@ -252,6 +274,8 @@ static OperationController *sharedOperationController;
                                                 } andFailure:failure];
         }
     } failure:failure];
+    
+    [self.operationQueue addOperation:operation];
 }
 
 -(void)fetchMessagesForPage:(NSInteger)page
@@ -265,7 +289,7 @@ static OperationController *sharedOperationController;
         NSMutableSet *newMessages = [[NSMutableSet alloc] init];
         for(NSDictionary *tempMessage in comments)
         {
-            if(![self containsMessageWithMessageID:[tempMessage objectForKey:@"messageID"]
+            if(![self containsMessageWithMessageID:[tempMessage objectForKey:@"id"]
                                 andCurrentMessages:currentMessages])
             {
                 Message *newMessage = [Message parseToObjectiveC:tempMessage];
@@ -276,15 +300,18 @@ static OperationController *sharedOperationController;
         success(newMessages);
         
     } failure:failure];
+    
+    [self.operationQueue addOperation:operation];
 }
 
 -(void)updateMessage:(Message *)message
              success:(void (^)())success
           andFailure:(void (^)(AFHTTPRequestOperation *, NSError *))failure
 {
-    NetworkOperation *operation = [[NetworkOperation alloc] initWithUpdatedMessage:message];
+    NetworkOperation *operation = [[NetworkOperation alloc] initWithUpdatedMarkerAddressedStatus:message];
     [operation setCompletionBlockWithSuccess:success
                                      failure:failure];
+    [self.operationQueue addOperation:operation];
 }
 
 -(void)sendNewMessage:(NSString *)message
@@ -295,6 +322,7 @@ static OperationController *sharedOperationController;
     NetworkOperation *operation = [[NetworkOperation alloc] initWithNewMessage:message andType:type];
     [operation setCompletionBlockWithSuccess:success
                                      failure:failure];
+    [self.operationQueue addOperation:operation];
 }
 
 #pragma mark - Other
@@ -340,6 +368,7 @@ static OperationController *sharedOperationController;
             success(homeMessage);
         }
     } failure:failure];
+    [self.operationQueue addOperation:operation];
 }
 
 #pragma mark - Utility Methods

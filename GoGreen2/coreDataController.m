@@ -131,7 +131,7 @@ static coreDataController *sharedCoreDataController;
 	
 	NSError *error = nil;
 	NSArray *fetchedObjects = [self.managedObjectContext executeFetchRequest: fetchRequest error: &error];
-	if (error == nil)
+	if (error != nil)
 	{
 		if (_predicate != nil)
 		{

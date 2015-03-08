@@ -23,11 +23,11 @@
     id pinID = [payload objectForKey:@"pin"];
     if([pinID isKindOfClass:[NSNumber class]])
     {
-        newMessage.messageID = [payload objectForKey:@"pin"];
+        [newMessage setMarkerID:pinID];
     }
     else
     {
-        newMessage.messageID = nil;
+        newMessage.markerID = nil;
     }
     newMessage.needsPush = @FALSE;
     newMessage.addressed = [payload objectForKey:@"addressed"];

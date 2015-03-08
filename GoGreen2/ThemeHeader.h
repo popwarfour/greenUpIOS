@@ -14,6 +14,7 @@
 #import "UIFont+methods.h"
 #import "MarkerConstants.h"
 #import "MessageConstants.h"
+#import "MessageTypes.h"
 #import "NetworkingConstants.h"
 #import "AppConstants.h"
 #import "HomeViewControllerConstants.h"
